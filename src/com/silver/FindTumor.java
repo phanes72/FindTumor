@@ -53,7 +53,7 @@ public class FindTumor {
         	for (int j = 0; j < rows[i].length(); j++) {
                 char currentChar = rows[i].charAt(j);
 
-                if (currentChar != ' ' && currentGroup.size() == 0) {
+                if (currentChar != ' ') {
                     currentGroup.add(currentChar);
 
                     if (j > 0 && rows[i].charAt(j - 1) != ' ' && rows[i].charAt(j - 1) != currentChar) {
