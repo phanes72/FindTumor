@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FindTumor {
 	private static String content;
@@ -116,14 +118,14 @@ public class FindTumor {
 		// Loop thru the Unique List of letters
 		while (listOfUniqueLetterIterator.hasNext()) {
 			String uniqueLetter = listOfUniqueLetterIterator.next();
-			String uniqueLetterSideBySide = uniqueLetter + uniqueLetter;
-
+			Pattern uniqueLetterSideBySidePattern = Pattern.compile(uniqueLetter + uniqueLetter);
+			Matcher uniqueLetterSideBySideGroups = uniqueLetterSideBySidePattern.matcher(content);
 			
-			if (content.contains(uniqueLetterSideBySide)) {
+			while(uniqueLetterSideBySideGroups.find()) {
 				System.out.println("Side by Side found for " + uniqueLetter);
 				String groupFoundString = "Side by Side found for " + uniqueLetter;
 				groupList.add(groupFoundString);
-			} 
+			}
 
 		}
 
