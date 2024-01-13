@@ -52,12 +52,14 @@ public class FindTumor {
 	}
 
 	protected static boolean hasMultipleGroups(String content) {
-		//String[] rows = content.split("\n");
+		// String[] rows = content.split("\n");
 		Set<Character> currentGroup = new HashSet<>();
 
 		populateUniqueLetterArray(content);
 
 		searchForLetterGroups();
+		
+		checkForCancer(groupList);
 
 		// Loop through the rows
 //        for (int i = 0; i < rows.length; i++) {
@@ -112,7 +114,7 @@ public class FindTumor {
 
 	// search for each letter structure of a side-by-side occurrence to establish a
 	// single block
-	protected static void searchForLetterGroups() {
+	protected static ArrayList<String> searchForLetterGroups() {
 		Iterator<String> listOfUniqueLetterIterator = listOfLetters.iterator();
 
 		// Loop thru the Unique List of letters
@@ -120,19 +122,39 @@ public class FindTumor {
 			String uniqueLetter = listOfUniqueLetterIterator.next();
 			Pattern uniqueLetterSideBySidePattern = Pattern.compile(uniqueLetter + uniqueLetter);
 			Matcher uniqueLetterSideBySideGroups = uniqueLetterSideBySidePattern.matcher(content);
-			
-			while(uniqueLetterSideBySideGroups.find()) {
-				System.out.println("Side by Side found for " + uniqueLetter);
+
+			while (uniqueLetterSideBySideGroups.find()) {
+				//System.out.println("Side by Side found for " + uniqueLetter);
 				String groupFoundString = "Side by Side found for " + uniqueLetter;
-				groupList.add(groupFoundString);
+				
+				
+//				if(groupList.size() == 0) {
+					groupList.add(groupFoundString);
+//				} else {
+//					return groupList;
+//				}
+					
+					
 			}
 
 		}
-
+		return groupList;
 	}
 
 	// when a new letter is found in the row drop down and see if that letter is
 	// found
 
-	//
+	
+	
+	
+	//Count the number of Side by Side found for LETTER.  If more than one then cancer is found
+	protected static boolean checkForCancer(ArrayList<String> groupList) {
+		int groupCounter = 0;
+		for(int i = 0; i < groupList.size();i++) {
+			System.out.println(groupList.get(i).toString());
+		}
+		
+		
+		return false;
+	}
 }
