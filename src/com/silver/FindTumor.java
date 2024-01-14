@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 public class FindTumor {
@@ -106,28 +107,33 @@ public class FindTumor {
 	
 	// Check for Letter Block
 	protected static void checkForLetterBlock() {
-		
+		Iterator<String> uniqueLetterIter = listOfUniqueLetters.iterator();
 
-		for (int l = 0; l < length; l++) {	
-			
-			for (int w = 0; w < width; w++) {				
-				
-				if (mriMatrix.get(l).getLetterName().contains(mriMatrix.get(w).getLetterName())) {
-					//Get the data about the current coordinate
-					Point2D cursorLocation = mriMatrix.get(w).getMriScanPoint();
+		while(uniqueLetterIter.hasNext()) {			
+			for (int l = 0; l < length; l++) {	
+				String uniqueLetter = uniqueLetterIter.next();
+				System.out.println("UNIQUE LETTER -- " + uniqueLetter);
+				for (int w = 0; w < width; w++) {				
 					
-					if (cursorLocation.distanceSq(l, w) >= 1) {
-						mriMatrix.get(w).setLetterBlock(true);
+					if (mriMatrix.get(l).getLetterName().contains(uniqueLetter)) {
+						//Get the data about the current coordinate
+						Point2D cursorLocation = mriMatrix.get(w).getMriScanPoint();
+						
+						if (cursorLocation.distanceSq(l, w) >= 1) {
+							mriMatrix.get(w).setLetterBlock(true);
 
-						System.out.println("mriMatrix Letter -- " + mriMatrix.get(w).getLetterName());
-						System.out.println("mriMatrix Coordinates -- " + mriMatrix.get(w).getMriScanPoint());
-						System.out.println("Is Letter part of a block - " + mriMatrix.get(w).isLetterBlock());
-						System.out.println("****************************************");
-						System.out.println();
+							System.out.println("mriMatrix Letter -- " + mriMatrix.get(w).getLetterName());
+							System.out.println("mriMatrix Coordinates -- " + mriMatrix.get(w).getMriScanPoint());
+							System.out.println("Is Letter part of a block - " + mriMatrix.get(w).isLetterBlock());
+							System.out.println("****************************************");
+							System.out.println();
+						}
 					}
 				}
 			}
 		}
+		
+
 	}
 
 	protected static boolean checkForCancer() {
