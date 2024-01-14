@@ -109,29 +109,28 @@ public class FindTumor {
 	protected static void checkForLetterBlock() {
 		Iterator<String> uniqueLetterIter = listOfUniqueLetters.iterator();
 
-		while(uniqueLetterIter.hasNext()) {			
-			for (int l = 0; l < length; l++) {	
-				String uniqueLetter = uniqueLetterIter.next();
-				System.out.println("UNIQUE LETTER -- " + uniqueLetter);
-				for (int w = 0; w < width; w++) {				
-					
-					if (mriMatrix.get(l).getLetterName().contains(uniqueLetter)) {
-						//Get the data about the current coordinate
-						Point2D cursorLocation = mriMatrix.get(w).getMriScanPoint();
-						
-						if (cursorLocation.distanceSq(l, w) >= 1) {
-							mriMatrix.get(w).setLetterBlock(true);
-
-							System.out.println("mriMatrix Letter -- " + mriMatrix.get(w).getLetterName());
-							System.out.println("mriMatrix Coordinates -- " + mriMatrix.get(w).getMriScanPoint());
-							System.out.println("Is Letter part of a block - " + mriMatrix.get(w).isLetterBlock());
-							System.out.println("****************************************");
-							System.out.println();
-						}
-					}
+		//while(uniqueLetterIter.hasNext()) {			
+			//String uniqueLetter = uniqueLetterIter.next();
+			//System.out.println("UNIQUE LETTER -- " + uniqueLetter);
+			//System.out.println();
+			
+			
+			for(int i = 1;i < mriMatrix.size();i++) {
+				//Determine if previous letter in the row is the same
+				String currentLetter = mriMatrix.get(i).getLetterName();
+				String previousLetterInRow = mriMatrix.get(i-1).getLetterName();
+				if(currentLetter.contains(previousLetterInRow)) {
+					mriMatrix.get(i).setLetterBlock(true);
 				}
+				
+				//Determine if letter in row above is the same
+				int indexForLetterAbove = (i - width) > -1 ? (i - width) : -1;
+				String letterInRowAbove = indexForLetterAbove > -1 ? mriMatrix.get(indexForLetterAbove).getLetterName() : "";
+				if(currentLetter.equals(letterInRowAbove)) {
+					mriMatrix.get(i).setLetterBlock(true);
+				}
+				
 			}
-		}
 		
 
 	}
@@ -139,13 +138,18 @@ public class FindTumor {
 	protected static boolean checkForCancer() {
 		int numberOfBlocks = 0;
 		for (int i = 0; i < mriMatrix.size(); i++) {
+			System.out.println(mriMatrix.get(i).getMriScanPoint());
+			System.out.println(mriMatrix.get(i).getLetterName());
+			System.out.println(mriMatrix.get(i).isLetterBlock());
+			System.out.println("****************************************");
+			System.out.println("****************************************");
 			if (mriMatrix.get(i).isLetterBlock()) {
 				numberOfBlocks++;
 
-				if (numberOfBlocks > 0) {
-					System.out.println("The patient has cancer.");
+				if (numberOfBlocks > 1) {
+					//System.out.println("The patient has cancer.");
 				} else {
-					System.out.println("All clear!  No Cancer!!");
+					//System.out.println("All clear!  No Cancer!!");
 				}
 			}
 		}
