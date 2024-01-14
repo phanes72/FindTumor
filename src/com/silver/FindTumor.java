@@ -13,7 +13,7 @@ public class FindTumor {
 	private static int width;
 	private static int length;
 	private static String content;
-	private static Set<String> listOfLetters = new HashSet<String>();
+	private static Set<String> listOfUniqueLetters = new HashSet<String>();
 
 	private static ArrayList<String> groupList = new ArrayList<String>();
 	private static ArrayList<ScanPoint> mriMatrix = new ArrayList<>();
@@ -58,8 +58,12 @@ public class FindTumor {
 		Set<Character> currentGroup = new HashSet<>();
 
 		populateMatrix();
+		
+		getUniqueLettersInTheMatrix();
 
 		checkForLetterBlock();
+
+		checkForCancer();
 
 		return currentGroup.size() > 1;
 	}
@@ -82,30 +86,41 @@ public class FindTumor {
 		for (int l = 0; l < length; l++) {
 			for (int w = 0; w < width; w++) {
 				String currentLetter = "" + rows[l].charAt(w);
-				//System.out.println("CurrentLetter" + currentLetter);
+				// System.out.println("CurrentLetter" + currentLetter);
 				Point2D coordinate = new Point2D.Double(w, l);
 				scanPoint = new ScanPoint(new String(currentLetter), coordinate); // System.out.println(scanPoint.getLetterName());
 																					// System.out.println(scanPoint.getMriScanPoint());
 
 				mriMatrix.add(scanPoint);
-				
+
 			}
 		}
 	}
 
+	protected static void getUniqueLettersInTheMatrix() {
+		for(int i = 0; i < mriMatrix.size();i++) {
+			listOfUniqueLetters.add(mriMatrix.get(i).getLetterName());
+		}
+		System.out.println("List of Unique Letters " + listOfUniqueLetters);
+	}
+	
 	// Check for Letter Block
 	protected static void checkForLetterBlock() {
-		Point2D location = mriMatrix.get(0).getMriScanPoint();
+		
 
-		for (int l = 0; l < length; l++) {
-			for (int w = 0; w < width; w++) {
-				if (mriMatrix.get(l).getLetterName().contains(mriMatrix.get(1).getLetterName())) {
-					if (location.distanceSq(0, 1) >= 1) {
-						mriMatrix.get(0).setLetterBlock(true);
-						
-						
-						System.out.println("mriMatrix Letter -- "+mriMatrix.get(w).getLetterName());
-						System.out.println("mriMatrix Coordinates -- "+mriMatrix.get(w).getMriScanPoint());
+		for (int l = 0; l < length; l++) {	
+			
+			for (int w = 0; w < width; w++) {				
+				
+				if (mriMatrix.get(l).getLetterName().contains(mriMatrix.get(w).getLetterName())) {
+					//Get the data about the current coordinate
+					Point2D cursorLocation = mriMatrix.get(w).getMriScanPoint();
+					
+					if (cursorLocation.distanceSq(l, w) >= 1) {
+						mriMatrix.get(w).setLetterBlock(true);
+
+						System.out.println("mriMatrix Letter -- " + mriMatrix.get(w).getLetterName());
+						System.out.println("mriMatrix Coordinates -- " + mriMatrix.get(w).getMriScanPoint());
 						System.out.println("Is Letter part of a block - " + mriMatrix.get(w).isLetterBlock());
 						System.out.println("****************************************");
 						System.out.println();
@@ -115,4 +130,20 @@ public class FindTumor {
 		}
 	}
 
+	protected static boolean checkForCancer() {
+		int numberOfBlocks = 0;
+		for (int i = 0; i < mriMatrix.size(); i++) {
+			if (mriMatrix.get(i).isLetterBlock()) {
+				numberOfBlocks++;
+
+				if (numberOfBlocks > 0) {
+					System.out.println("The patient has cancer.");
+				} else {
+					System.out.println("All clear!  No Cancer!!");
+				}
+			}
+		}
+
+		return false;
+	}
 }
