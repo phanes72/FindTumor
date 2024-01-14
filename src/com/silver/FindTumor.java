@@ -59,7 +59,7 @@ public class FindTumor {
 		Set<Character> currentGroup = new HashSet<>();
 
 		populateMatrix();
-		
+
 		getUniqueLettersInTheMatrix();
 
 		checkForLetterBlock();
@@ -87,10 +87,10 @@ public class FindTumor {
 		for (int l = 0; l < length; l++) {
 			for (int w = 0; w < width; w++) {
 				String currentLetter = "" + rows[l].charAt(w);
-				// System.out.println("CurrentLetter" + currentLetter);
 				Point2D coordinate = new Point2D.Double(w, l);
-				scanPoint = new ScanPoint(new String(currentLetter), coordinate); // System.out.println(scanPoint.getLetterName());
-																					// System.out.println(scanPoint.getMriScanPoint());
+
+				String groupName = currentLetter;
+				scanPoint = new ScanPoint(new String(currentLetter), coordinate, false, groupName);
 
 				mriMatrix.add(scanPoint);
 
@@ -99,59 +99,113 @@ public class FindTumor {
 	}
 
 	protected static void getUniqueLettersInTheMatrix() {
-		for(int i = 0; i < mriMatrix.size();i++) {
+		for (int i = 0; i < mriMatrix.size(); i++) {
 			listOfUniqueLetters.add(mriMatrix.get(i).getLetterName());
 		}
 		System.out.println("List of Unique Letters " + listOfUniqueLetters);
 	}
-	
+
 	// Check for Letter Block
 	protected static void checkForLetterBlock() {
 		Iterator<String> uniqueLetterIter = listOfUniqueLetters.iterator();
 
-		//while(uniqueLetterIter.hasNext()) {			
-			//String uniqueLetter = uniqueLetterIter.next();
-			//System.out.println("UNIQUE LETTER -- " + uniqueLetter);
-			//System.out.println();
-			
-			
-			for(int i = 1;i < mriMatrix.size();i++) {
-				//Determine if previous letter in the row is the same
-				String currentLetter = mriMatrix.get(i).getLetterName();
-				String previousLetterInRow = mriMatrix.get(i-1).getLetterName();
-				if(currentLetter.contains(previousLetterInRow)) {
-					mriMatrix.get(i).setLetterBlock(true);
-				}
-				
-				//Determine if letter in row above is the same
-				int indexForLetterAbove = (i - width) > -1 ? (i - width) : -1;
-				String letterInRowAbove = indexForLetterAbove > -1 ? mriMatrix.get(indexForLetterAbove).getLetterName() : "";
-				if(currentLetter.equals(letterInRowAbove)) {
-					mriMatrix.get(i).setLetterBlock(true);
-				}
-				
+		// while(uniqueLetterIter.hasNext()) {
+		// String uniqueLetter = uniqueLetterIter.next();
+		// System.out.println("UNIQUE LETTER -- " + uniqueLetter);
+		// System.out.println();
+
+		for (int i = 1; i < mriMatrix.size(); i++) {
+			// Determine if previous letter in the row is the same
+			String currentLetter = mriMatrix.get(i).getLetterName();
+			String previousLetterInRow = mriMatrix.get(i - 1).getLetterName();
+
+			int xInt = (int) mriMatrix.get(i).getMriScanPoint().getX();
+			int yInt = (int) mriMatrix.get(i).getMriScanPoint().getY();
+			String groupName = currentLetter + xInt + yInt;
+
+			if (currentLetter.contains(previousLetterInRow)) {
+				mriMatrix.get(i).setLetterBlock(true);
+				mriMatrix.get(i).setGroupName(groupName);
 			}
-		
+
+			// Determine if letter in row above is the same
+			int indexForLetterAbove = (i - width) > -1 ? (i - width) : -1;
+			String letterInRowAbove = indexForLetterAbove > -1 ? mriMatrix.get(indexForLetterAbove).getLetterName()
+					: "";
+			if (currentLetter.equals(letterInRowAbove)) {
+				mriMatrix.get(i).setLetterBlock(true);
+				mriMatrix.get(i).setGroupName(groupName);
+			}
+
+		}
 
 	}
 
 	protected static boolean checkForCancer() {
+		determineIfBlockIsAutonomous(mriMatrix);
+		
 		int numberOfBlocks = 0;
 		for (int i = 0; i < mriMatrix.size(); i++) {
-			System.out.println(mriMatrix.get(i).getMriScanPoint());
-			System.out.println(mriMatrix.get(i).getLetterName());
-			System.out.println(mriMatrix.get(i).isLetterBlock());
-			System.out.println("****************************************");
-			System.out.println("****************************************");
+
+
 			if (mriMatrix.get(i).isLetterBlock()) {
 				numberOfBlocks++;
 
 				if (numberOfBlocks > 1) {
-					//System.out.println("The patient has cancer.");
+					// System.out.println("The patient has cancer.");
 				} else {
-					//System.out.println("All clear!  No Cancer!!");
+					// System.out.println("All clear! No Cancer!!");
 				}
 			}
+		}
+
+		return false;
+	}
+
+	protected static boolean determineIfBlockIsAutonomous(ArrayList<ScanPoint> mriMatrix) {
+
+		for (int i = 0; i < mriMatrix.size(); i++) {
+			String group = mriMatrix.get(i).getGroupName();
+
+			if (group.length() > 1) {
+
+				char xPoint = group.charAt(1);
+				char yPoint = group.charAt(2);
+
+				//Look for related Blocks and assign a mutual identifier				
+				for (int x = 0; x < mriMatrix.size(); x++) {
+					String groupName = mriMatrix.get(x).getGroupName();
+					
+					System.out.println("###");
+					System.out.println("groupName--" + groupName);
+					if (groupName.length() > 1) {
+						
+						char xGroup = groupName.charAt(1);
+						char yGroup = groupName.charAt(2);
+
+						
+						//if xPoint is within 1 space of xGroup and yPoint is equal to yGroup then same block 
+						int xDiff = xPoint - xGroup;
+						xDiff = xDiff < 1 ? xDiff * -1 : xDiff;
+												
+						//if xPoint is within 1 space of xGroup and yPoint is equal to yGroup then same block
+						int yDiff = yPoint - yGroup;
+						yDiff = yDiff < 1 ? yDiff * -1 : yDiff;
+						
+						
+						if(xDiff <= 1 && yDiff <= 1) {
+							mriMatrix.get(x).setGroupName(group);
+						}
+							
+						
+						
+						System.out.println("groupName--" + mriMatrix.get(x).getGroupName());
+						System.out.println("***********************************************");
+					}
+
+				}
+			}
+
 		}
 
 		return false;
