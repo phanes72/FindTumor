@@ -1,24 +1,25 @@
 package com.silver;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class FindTumor {
+	private static int width;
+	private static int length;
 	private static String content;
 	private static Set<String> listOfLetters = new HashSet<String>();
+
 	private static ArrayList<String> groupList = new ArrayList<String>();
+	private static ArrayList<ScanPoint> mriMatrix = new ArrayList<>();
 
 	public static void main(String[] args) {
 		args = new String[1];
-
 		// Get file
 		args[0] = "resources/test.in";
 
@@ -30,6 +31,8 @@ public class FindTumor {
 		String filePath = args[0];
 		try {
 			content = readContent(filePath);
+			int[] dimensions = calculateDimensions(content);
+
 			boolean hasMultipleGroups = hasMultipleGroups(content);
 
 			if (hasMultipleGroups) {
@@ -38,7 +41,6 @@ public class FindTumor {
 				System.out.println("False");
 			}
 
-			int[] dimensions = calculateDimensions(content);
 			System.out.println("Dimensions: " + dimensions[0] + " x " + dimensions[1]);
 
 		} catch (IOException e) {
@@ -55,106 +57,62 @@ public class FindTumor {
 		// String[] rows = content.split("\n");
 		Set<Character> currentGroup = new HashSet<>();
 
-		populateUniqueLetterArray(content);
+		populateMatrix();
 
-		searchForLetterGroups();
-		
-		checkForCancer(groupList);
-
-		// Loop through the rows
-//        for (int i = 0; i < rows.length; i++) {
-//            
-//        	//Loop through the columns
-//        	for (int j = 0; j < rows[i].length(); j++) {
-//                char currentChar = rows[i].charAt(j);
-//
-//                if (currentChar != ' ') {
-//                    currentGroup.add(currentChar);
-//
-//                    if (j > 0 && rows[i].charAt(j - 1) != ' ' && rows[i].charAt(j - 1) != currentChar) {
-//                        return true;
-//                    }
-//
-//                    if (i > 0 && rows[i - 1].charAt(j) != ' ' && rows[i - 1].charAt(j) != currentChar) {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
+		checkForLetterBlock();
 
 		return currentGroup.size() > 1;
 	}
 
 	protected static int[] calculateDimensions(String content) {
 		String[] rows = content.split("\n");
-		int length = rows.length;
-		int width = rows.length > 0 ? rows[0].length() : 0;
+		length = rows.length;
+		width = rows.length > 0 ? rows[0].length() : 0;
 		return new int[] { length, width };
 	}
 
-	// Populate a static content variable to carry the matrix data
-
-	// find all the unique letters in the matrix
-	protected static void populateUniqueLetterArray(String content) {
+	// Populate the matrix into a ScanPoint object that contains the Letter name and
+	// it's coordinate
+	protected static void populateMatrix() {
+		ScanPoint scanPoint;
 
 		String[] rows = content.split("\n");
 
-		for (int i = 0; i < rows.length; i++) {
+		// Loop through the content and build a matrix
+		for (int l = 0; l < length; l++) {
+			for (int w = 0; w < width; w++) {
+				String currentLetter = "" + rows[l].charAt(w);
+				//System.out.println("CurrentLetter" + currentLetter);
+				Point2D coordinate = new Point2D.Double(w, l);
+				scanPoint = new ScanPoint(new String(currentLetter), coordinate); // System.out.println(scanPoint.getLetterName());
+																					// System.out.println(scanPoint.getMriScanPoint());
 
-			for (int j = 0; j < rows[i].length(); j++) {
+				mriMatrix.add(scanPoint);
+				
+			}
+		}
+	}
 
-				String currentLetter = "" + rows[i].charAt(j);
-				if (!currentLetter.isBlank()) {
-					listOfLetters.add(currentLetter);
+	// Check for Letter Block
+	protected static void checkForLetterBlock() {
+		Point2D location = mriMatrix.get(0).getMriScanPoint();
+
+		for (int l = 0; l < length; l++) {
+			for (int w = 0; w < width; w++) {
+				if (mriMatrix.get(l).getLetterName().contains(mriMatrix.get(1).getLetterName())) {
+					if (location.distanceSq(0, 1) >= 1) {
+						mriMatrix.get(0).setLetterBlock(true);
+						
+						
+						System.out.println("mriMatrix Letter -- "+mriMatrix.get(w).getLetterName());
+						System.out.println("mriMatrix Coordinates -- "+mriMatrix.get(w).getMriScanPoint());
+						System.out.println("Is Letter part of a block - " + mriMatrix.get(w).isLetterBlock());
+						System.out.println("****************************************");
+						System.out.println();
+					}
 				}
-
 			}
 		}
 	}
 
-	// search for each letter structure of a side-by-side occurrence to establish a
-	// single block
-	protected static ArrayList<String> searchForLetterGroups() {
-		Iterator<String> listOfUniqueLetterIterator = listOfLetters.iterator();
-
-		// Loop thru the Unique List of letters
-		while (listOfUniqueLetterIterator.hasNext()) {
-			String uniqueLetter = listOfUniqueLetterIterator.next();
-			Pattern uniqueLetterSideBySidePattern = Pattern.compile(uniqueLetter + uniqueLetter);
-			Matcher uniqueLetterSideBySideGroups = uniqueLetterSideBySidePattern.matcher(content);
-
-			while (uniqueLetterSideBySideGroups.find()) {
-				//System.out.println("Side by Side found for " + uniqueLetter);
-				String groupFoundString = "Side by Side found for " + uniqueLetter;
-				
-				
-//				if(groupList.size() == 0) {
-					groupList.add(groupFoundString);
-//				} else {
-//					return groupList;
-//				}
-					
-					
-			}
-
-		}
-		return groupList;
-	}
-
-	// when a new letter is found in the row drop down and see if that letter is
-	// found
-
-	
-	
-	
-	//Count the number of Side by Side found for LETTER.  If more than one then cancer is found
-	protected static boolean checkForCancer(ArrayList<String> groupList) {
-		int groupCounter = 0;
-		for(int i = 0; i < groupList.size();i++) {
-			System.out.println(groupList.get(i).toString());
-		}
-		
-		
-		return false;
-	}
 }
