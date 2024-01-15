@@ -21,7 +21,7 @@ public class FindTumor {
 		try {
 			// To run in an IDE uncomment the two lines below and run internal files from the project's resources folder
 			//args = new String[1]; 
-			//args[0] = "resources/test.in";
+			//args[0] = "resources/test_error.in";
 
 			String returnMessage;
 
@@ -34,6 +34,7 @@ public class FindTumor {
 			try {
 				content = readContent(filePath);
 				int[] dimensions = calculateDimensions(content);
+				
 
 				boolean hasMultipleGroups = hasMultipleGroups(content);
 
@@ -54,7 +55,7 @@ public class FindTumor {
 			}
 
 		} catch (Exception e) {
-			System.err.println("NA");
+			System.err.println("Error,NA,NA");
 			System.err.println("Process finished with exit code -1");
 			System.exit(1);
 		}
@@ -80,10 +81,18 @@ public class FindTumor {
 		return checkForCancer();
 	}
 
-	protected static int[] calculateDimensions(String content) {
+	protected static int[] calculateDimensions(String content) throws Exception {
 		String[] rows = content.split("\n");
 		length = rows.length;
 		width = rows.length > 0 ? rows[0].length() : 0;
+		
+		for(int i = 0;i < length; i++) {
+			if(rows[i].length() != width) {
+				throw new Exception();
+			}
+		}
+		
+		
 		return new int[] { length, width };
 	}
 
