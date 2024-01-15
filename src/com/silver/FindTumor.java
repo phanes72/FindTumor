@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class FindTumor {
@@ -14,7 +15,7 @@ public class FindTumor {
 	private static int length;
 	private static String content;
 
-	private static ArrayList<ScanPoint> mriMatrix = new ArrayList<>();
+	private static List<ScanPoint> mriMatrix = new ArrayList<ScanPoint>();
 
 	public static void main(String[] args) {
 		args = new String[1];
@@ -52,6 +53,7 @@ public class FindTumor {
 		return Files.readString(path);
 	}
 
+	//Main Method that calls the other utility methods
 	protected static boolean hasMultipleGroups(String content) {
 		// String[] rows = content.split("\n");
 		Set<Character> currentGroup = new HashSet<>();
@@ -74,7 +76,7 @@ public class FindTumor {
 		return new int[] { length, width };
 	}
 
-	// Populate the matrix into a ScanPoint object that contains the Letter name and
+	// Populate the matrix into a ScanPoint object that equals the Letter name and
 	// it's coordinate
 	protected static void populateMatrix() {
 		ScanPoint scanPoint;
@@ -96,12 +98,6 @@ public class FindTumor {
 		}
 	}
 
-//	protected static void getUniqueLettersInTheMatrix() {
-//		for (int i = 0; i < mriMatrix.size(); i++) {
-//			listOfUniqueLetters.add(mriMatrix.get(i).getLetterName());
-//		}
-//		System.out.println("List of Unique Letters " + listOfUniqueLetters);
-//	}
 
 	// Check for Letter Block
 	protected static void checkForLetterBlock() {
@@ -115,15 +111,16 @@ public class FindTumor {
 			int yInt = (int) mriMatrix.get(i).getMriScanPoint().getY();
 			String groupName = currentLetter + xInt + yInt;
 
-			if (currentLetter.contains(previousLetterInRow)) {
+			if (currentLetter.equals(previousLetterInRow)) {
 				mriMatrix.get(i).setLetterBlock(true);
 				mriMatrix.get(i).setGroupName(groupName);
 			}
 
 			// Determine if letter in row above is the same
 			int indexForLetterAbove = (i - width) > -1 ? (i - width) : -1;
-			String letterInRowAbove = indexForLetterAbove > -1 ? mriMatrix.get(indexForLetterAbove).getLetterName()
-					: "";
+			String letterInRowAbove = indexForLetterAbove > -1 ? mriMatrix.get(indexForLetterAbove).getLetterName() : "";
+			
+			// If the letter above is the same then set the one below as part of the same block
 			if (currentLetter.equals(letterInRowAbove)) {
 				mriMatrix.get(i).setLetterBlock(true);
 				mriMatrix.get(i).setGroupName(groupName);
@@ -136,7 +133,7 @@ public class FindTumor {
 	// Loop through the list of block ids count how many different ids start with
 	// the same letter but are different
 	protected static boolean checkForCancer() {
-		determineIfBlockIsAutonomous(mriMatrix);
+		determineIfBlockIsAutonomous();
 
 		int blockIdCount = 0;
 		for (int i = 0; i < mriMatrix.size(); i++) {
@@ -166,47 +163,65 @@ public class FindTumor {
 		return false;
 	}
 
-	protected static boolean determineIfBlockIsAutonomous(ArrayList<ScanPoint> mriMatrix) {
+	//Give the blocks that are in the same block and similar id
+	protected static boolean determineIfBlockIsAutonomous() {
 
 		for (int i = 0; i < mriMatrix.size(); i++) {
-			String group = mriMatrix.get(i).getGroupName();
+			String initalGroup = mriMatrix.get(i).getGroupName();			
+			System.out.println("Initial Group " + initalGroup);
 
-			if (group.length() > 1) {
+			if (initalGroup.length() > 1) {
 
-				char xPoint = group.charAt(1);
-				char yPoint = group.charAt(2);
+				String initalXCord = Character.toString(initalGroup.charAt(1));
+				String initalYCord = Character.toString(initalGroup.charAt(2));				
+				System.out.println("Initial location: " + initalXCord + "," + initalYCord);
+				
+				String initalGroupLetter = Character.toString(initalGroup.charAt(0));
 
 				// Look for related Blocks and assign a mutual identifier
 				for (int x = 0; x < mriMatrix.size(); x++) {
-					String interalLoopGroupName = mriMatrix.get(x).getGroupName();
-
-					if (interalLoopGroupName.length() > 0 && !group.equals(interalLoopGroupName)) {
-
-						char xGroup = group.charAt(1);
-						char yGroup = group.charAt(2);
-
-						// if xPoint is within 1 space of xGroup and yPoint is equal to yGroup then same
-						// block
-						int xDiff = xPoint - xGroup;
-						xDiff = xDiff < 1 ? xDiff * -1 : xDiff;
+					String interalLoopGroupName = mriMatrix.get(x).getGroupName();					
+					String internalLoopLetter = Character.toString(interalLoopGroupName.charAt(0));
+					
+					if (initalGroupLetter.equals(internalLoopLetter) && !initalGroup.equals(interalLoopGroupName)) {
+						System.out.println("Looking for this InternalLoopGroupName-"+ interalLoopGroupName);
+						
+						int currentXCord = (int) mriMatrix.get(x).getMriScanPoint().getX();
+						int currentYCord = (int) mriMatrix.get(x).getMriScanPoint().getY();
 
 						// if xPoint is within 1 space of xGroup and yPoint is equal to yGroup then same
 						// block
-						int yDiff = yPoint - yGroup;
-						yDiff = yDiff < 1 ? yDiff * -1 : yDiff;
+						int xDiff = Integer.parseInt(initalXCord) - currentXCord;
+						System.out.println("initalXCord is " + initalXCord); 
+						System.out.println("currentXCord is " + currentXCord); 
+						//xDiff = xDiff < 1 ? xDiff * -1 : xDiff;
+						System.out.println("xDiff is " + xDiff); 
+
+						// if xPoint is within 1 space of xGroup and yPoint is equal to yGroup then same
+						// block
+						int yDiff = Integer.parseInt(initalYCord) - currentYCord;
+						System.out.println("initalYCord is " + initalYCord); 
+						System.out.println("currentYCord is " + currentYCord); 
+						
+						//yDiff = yDiff < 1 ? yDiff * -1 : yDiff;
+						System.out.println("yDiff is " + yDiff); 
 
 						if (xDiff <= 1) {
-							mriMatrix.get(x).setGroupName(group);
+							mriMatrix.get(x).setGroupName(initalGroup);
+							System.out.println("xDiff is " + xDiff + " so interalLoopGroupName is now " + mriMatrix.get(x).getGroupName());
+							break;
 						}
 						if (yDiff <= 1) {
-							mriMatrix.get(x).setGroupName(group);
+							mriMatrix.get(x).setGroupName(initalGroup);
+							System.out.println("yDiff is " + yDiff + " so interalLoopGroupName is now " + mriMatrix.get(x).getGroupName());
+							break;
 						}
 
 					}
 
 				}
 			}
-
+			System.out.println("**************************************************");
 		}
 
 		return false;
